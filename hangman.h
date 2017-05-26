@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX 50
-
-void printStage(int s, char *used);
-void printBanner(void);
-void getAnswer(char *filename, char *answer);
-
 
 struct stat {
     char name[MAX];
@@ -15,10 +11,31 @@ struct stat {
     int loss;
     int guess;
 };
-    
-void getStats(struct stat *user);
-void updateStats(struct stat *user);
+//
+//  PROTOTYPES
+//
+void printStage(int s, char *used);
 
+void printBanner(void);
+
+void getAnswer(char *filename, char *answer);
+
+void printAnswer(char *answer, char *output);
+
+int evaluateGuess(char *answer, char *guess, char *output, char *used, int *wrong, int *win);
+
+int getGuess(char *guess);
+
+int updateOutput(char *guess, char *answer, char *output);
+
+int checkUsed(char *guesschar, char *usedChars);
+
+void getStats(struct stat *user);
+
+void updateStats(struct stat *user);
+//
+//  FUNCTIONS
+//
 void printAnswer(char *answer, char *output)
 {
     printf("Answer: ");
