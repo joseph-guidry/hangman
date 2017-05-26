@@ -1,2 +1,3 @@
 wordlist
 project.c
+*.o

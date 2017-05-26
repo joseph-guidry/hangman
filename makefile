@@ -1,14 +1,11 @@
 #
-#	Makefile for Hangman Game
+#
 #
 
+all: main
 
-all : printStage
+main: main.c printStage.o getAnswer.o
+	gcc -Wall -o main main.c printStage.o getAnswer.o
 
-printStage: printStage.c
-	gcc -Wall -Wextra -Wpedantic -Wwrite-strings -Wstack-usage=1024 -Wfloat-equal -Waggregate-return -Winline -o printStage printStage.c
-
-clean: 
-	rm printStage
-
-
+clean:
+	rm *
