@@ -6,37 +6,45 @@
 
 #include "hangman.h"
 
+void checkAnswer(char *filename, char *answer);
+
 int main(int argc, char **argv)
 {
     FILE *game;
-    int x, wrong = 0, match = 0, num = 1; //win, loss;
+    int x, wrong = 0, match = 0, num = 1; // nonAlpha = 1; 
     struct stats currentuser;
     
     char again[MAX];
     char guess[MAX];
     char gameAnswer[MAX];
     char outputAnswer[MAX];
-    /*
+    char wordfilename[MAX];
+    
     if (argc == 1)
-    */
-    if (argc == 2)
+    {
+        strcpy(wordfilename, getenv("HOME"));
+        strcat(wordfilename, "/.words");
+    }
+    else if (argc > 2)
     {
         printf("%s: invalid number of arguements\n", argv[0]);
         exit(1);
     }
-    /*
-    if (argc == 3)
+    else
     {
-        //get the 
+        strcpy(wordfilename, argv[1]);
     }
-    */
+   
+    printf("[%s] filename \n", wordfilename);
+   
     //Make .hangman file if it doesn't exist
-    if( (game = fopen("hangman", "r")) == NULL )
+    if( (game = fopen(".hangman", "r")) == NULL )
     {
         printf("here if hangman does not exist\n");
-        game = fopen("hangman", "w");
+        game = fopen(".hangman", "w");
         if (game == NULL)
         {
+            printf("here\n");
             exit(1);
         }
         struct stats user;
@@ -48,38 +56,32 @@ int main(int argc, char **argv)
         fwrite(&user, 1 , sizeof(struct stats), game);
         printf("[%ld] position \n", ftell(game));
     }
-    printf("skip making hangman\n");
     fclose(game);
     
     getStats(&currentuser);
 
-    printf("[%s] \n", getenv("SHELL"));
-    printf("Begining of game\nuser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
-             currentuser.wins, currentuser.loss, 
-             (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
-             
     strcpy(currentuser.name, getenv("USER"));
     
     while(1)
         {
-        getAnswer(argv[1], gameAnswer);
+        checkAnswer(wordfilename, gameAnswer);
+        
         //Reset the output answer to all '_' characters
         for (x = 0; x < strlen(gameAnswer); x++)
         {
             outputAnswer[x] = '_';
         }
         outputAnswer[x] = '\0';
+        if (strstr(getenv("SHELL"), "bin/bash") ) //If running in BASH shell environment
+        {
+            system("clear");
+        }
+        
+        printBanner();
+        printStage(wrong);
         
         while(1)
         {      
-            if (strstr(getenv("SHELL"), "bin/bash") ) //If running in BASH shell environment
-            {
-                system("clear");
-            }
-            
-            printBanner();
-            printStage(wrong);
-            
             printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
             printAnswer(gameAnswer, outputAnswer);
             
@@ -91,17 +93,24 @@ int main(int argc, char **argv)
                 break;
             }
             printf("win: [%d] \n", match);
+            
             if (match)
             {
                 printf("You win!");
                 currentuser.wins++;
-                printf("Current wins: %d", currentuser.wins);
+                printf("Total wins: %d\n", currentuser.wins);
 
                 currentuser.guess += wrong;
                 wrong = 0;
-                
                 break;
             }
+            
+            if (strstr(getenv("SHELL"), "bin/bash") ) //If running in BASH shell environment
+            {
+                system("clear");
+            }
+            printBanner();
+            printStage(wrong);
             if (wrong == 6)
             {
                 printf("You lost!\nThe answer was:  [%s]\n", gameAnswer);
@@ -109,19 +118,19 @@ int main(int argc, char **argv)
                 printf("Update loss stats: %d\n", currentuser.loss);
                 currentuser.loss++;
                 wrong = 0;
+
                 break;
                 
             }
             
         }
+        
         //If user wins OR loses ask to play again.
         printf("Play again? Type 'yes' >  ");
         fgets(again, MAX, stdin);
         again[strlen(again) - 1] = '\0';
-        printf("exit phrase: [%s] %d\n", again, strcmp(again, "yes"));
         if (strcmp(again, "yes") == 0)
         {
-            printf("here on exit\n");
             match = 0;
             continue;
         }
@@ -138,7 +147,7 @@ int main(int argc, char **argv)
 void getStats(struct stats *user)
 {
     FILE *fp;
-    fp = fopen("hangman", "rb+");
+    fp = fopen(".hangman", "rb+");
     unsigned int num;
 
     if ( fp == NULL )
@@ -147,14 +156,9 @@ void getStats(struct stats *user)
         exit(1);
     }
     fseek(fp, 0, 0);
-    printf("Open hangman at: %ld \n", ftell(fp));
    
-    printf("[%ld] position \n", ftell(fp));
     fread(&num, 1, sizeof(int), fp);
-    printf("[%d]\n", num);
-    printf("[%ld] position \n", ftell(fp));
     fread(user, sizeof(struct stats), 1, fp);
-    printf("[%ld] position \n", ftell(fp));
     
     
     fclose(fp);
@@ -164,16 +168,12 @@ void updateStats(struct stats *user)
 {   
 
     FILE *fp;
-    fp = fopen("hangman", "r+");
+    fp = fopen(".hangman", "r+");
     
     fseek(fp, 0, 0);
-    printf("[%ld] position \n", ftell(fp));
     int num = 1;
     fwrite(&num, 1, sizeof(int), fp);
-    printf("[%ld] position \n", ftell(fp));
-    
     fwrite(user, 1 , sizeof(struct stats), fp);
-    printf("[%ld] position \n", ftell(fp));
     fclose(fp);
     
     

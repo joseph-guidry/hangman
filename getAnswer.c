@@ -4,8 +4,8 @@
 #include <time.h>
 #include <ctype.h>
 
-#define MAX 50
 
+#define MAX 50
 void getAnswer(char *filename, char *answer)
 {
     FILE *fp;
@@ -24,29 +24,64 @@ void getAnswer(char *filename, char *answer)
     }
     
     srand(time(NULL));
-    wordNum = rand() % (lc + 1);  
+    wordNum = rand() % lc+ 1;  
     //Generate rand num for line to select. between 0 and last line.
-    printf("line number: [%d] wordNum: [%d]\n", lc, wordNum);
+    //printf("line number: [%d] wordNum: [%d]\n", lc, wordNum);
     lc = 0;
 
     fseek(fp, 0, 0);
     while( fgets(temp, MAX, fp))
     {
         lc++;
-        if ((lc == wordNum)  && (sscanf(temp,"%s", answer)))
+        if ((lc == wordNum)  && (sscanf(temp,"%s", answer)) )
         {
-            printf("[%s]: answer\n", answer);
+        
+            //printf("[%s]: answer\n", answer);
             for( ; *answer; answer++)
             {
                 *answer = tolower(*answer);
             }
+            
             fclose(fp);
             return;
         }
     }
     
     fclose(fp);
-
-    
-    
 }
+void checkAnswer(char *filename, char *answer)
+{
+    char temp[MAX];
+    unsigned int x, alpha = 1;
+    while(alpha)
+    {
+        strcpy(temp, filename);
+        getAnswer(temp, answer);
+        if ( strlen(answer) < 3)
+        {
+            continue;
+        }
+        for (unsigned x = 0; answer[x] ; x++)
+        {
+            //printf("[%c] \n", *answer);
+            if( isdigit(answer[x]) )
+            {
+                //printf("[%c] \n", answer[x]);
+                break;
+            }
+            
+            if ( !(isalpha(answer[x])) )
+            {
+                //printf("[%c] \n", answer[x]);
+                break;
+            }
+            //printf(" [%s] x: %d len: %lu \n", answer, x, strlen(answer));
+            if (x == strlen(answer) - 1 )
+            {
+                return;
+            }  
+        }
+    }
+}
+
+
