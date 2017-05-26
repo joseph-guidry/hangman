@@ -4,20 +4,10 @@
 
 #include "hangman.h"
 
-
-struct stat {
-    char name[MAX];
-    int wins;
-    int loss;
-    int guess;
-};
-    
-void getStats(struct stat *user);
-void updateStats(struct stat *user);
-
 int main(int argc, char **argv)
 {
     char gameAnswer[MAX];
+    char outputAnswer[MAX];
     char usedChars[MAX];   
      
     struct stat user;
@@ -28,6 +18,8 @@ int main(int argc, char **argv)
         exit(1);
     }
     getAnswer(argv[1], gameAnswer);
+    printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
+    
     getStats(&user);
 
     printf("%s \n", gameAnswer);
@@ -41,42 +33,14 @@ int main(int argc, char **argv)
     
     printf("Name: %s \nWins: %d\nLosses: %d\n", user.name, user.wins, user.loss);
     
-    
+    printBanner();
     printStage(0, usedChars);
+    for (int x = 0; x < strlen(gameAnswer); x++)
+        {
+            outputAnswer[x] = '_';
+        } 
+    printAnswer(gameAnswer, outputAnswer);
     
     return 0;
 }
 
-void getStats(struct stat *user)
-{
-    struct stat *temp = malloc(sizeof(struct stat));
-    FILE *fp;
-
-    if ( (fp = fopen("hangman", "wb")) == NULL )
-    {
-        printf("Couldn't open .hangman file");
-        exit(1);
-    }
-    
-    fread(temp, sizeof(struct stat), 1, fp);
-        fclose(fp);
-        
-    user = temp;
-}
-void updateStats(struct stat *user)
-{
-    FILE *fp = fopen("hangman", "wb");
-    
-    if ( fp == NULL )
-    {
-        printf("Couldn't open .hangman file");
-        exit(1);
-    }
-    
-    
-    fseek(fp, 0, 0);
-    fwrite(user, sizeof(struct stat), 1, fp);
-    fclose(fp);
-    return;
-    
-}
