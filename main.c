@@ -15,7 +15,6 @@ int main(int argc, char **argv)
     char guess[MAX];
     char gameAnswer[MAX];
     char outputAnswer[MAX];
-    char usedGuess[MAX];
     
     if (argc != 2)
     {
@@ -23,117 +22,121 @@ int main(int argc, char **argv)
         exit(1);
     }
     //GET PREVIOUS GAME STATS from .hangout   fopen(.hangman, "w+")
+    getStats(&currentuser);
+    
+    int x;
     
     printf("user: %s Wins: %d, Losses: %d \n", currentuser.name, currentuser.wins, currentuser.loss);
     
     while(1)
         {
         getAnswer(argv[1], gameAnswer);
-        for (int x = 0; x < strlen(gameAnswer); x++)
+        //Reset the output answer to all '_' characters
+        for (x = 0; x < strlen(gameAnswer); x++)
         {
             outputAnswer[x] = '_';
-        }   
-        while(1)
+        }
+        outputAnswer[x] = '\0';
+        
+        while(0)
         {      
             system("clear");//&& system("cls");
             printBanner();
-            printStage(wrong, usedGuess);
-            if (wrong == 6)                 //REposition
-            {
-                printf("You lost\n");
-                //loss++;
-                break;
-                
-            }
+            printStage(wrong);
             
             printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
             printAnswer(gameAnswer, outputAnswer);
             
-            if (evaluateGuess(gameAnswer, guess, outputAnswer, usedGuess, &wrong, &match) == 2)
+            if (evaluateGuess(gameAnswer, guess, outputAnswer, &wrong, &match) == 1)
             {
                 printf("Update loss stats\n");
-                //loss++;
+                currentuser.loss++;
                 
                 break;
             }
             printf("win: [%d] \n", match);
             if (match)
             {
-                //win++;
+                printf("You win!");
+                currentuser.wins++;
+                currentuser.guess += wrong;
+                wrong = 0;
                 
                 break;
             }
+            if (wrong == 6)
+            {
+                printf("You lost!\nThe answer was:  [%s]\n", gameAnswer);
                 
+                //printf("Update loss stats\n");
+                currentuser.loss++;
+                wrong = 0;
+                break;
+                
+            }
             
         }
         //If user wins OR loses ask to play again.
         printf("Play again? Type 'yes' >  ");
         fgets(again, MAX, stdin);
         again[strlen(again) - 1] = '\0';
-        
+        printf("exit phrase: [%s] %d\n", again, strcmp(again, "yes"));
         if (strcmp(again, "yes") == 0)
         {
+            printf("here on exit\n");
             match = 0;
             continue;
         }
         break;
-    } 
+    }
+    printf("user: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name, currentuser.wins, 
+           currentuser.loss, (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
     //updateStats();
     
     return 0; 
 }
-int evaluateGuess(char *answer, char *guess, char *output, char *used, int *wrong, int *win)
+void getStats(struct stat *user)
 {
-    if (getGuess(guess))    //Get character for guess
-    {
-        return 1;           // Quitting
-    }
-    
-    if (updateOutput(guess, answer, output))
-    {
-        (*wrong)++;
-        return 0;
-    }
-    
-    //printf("Answer: [%s] Output: [%s] Guess: [%s]\n", answer, output, guess);
-   // printf("compare: %d \n", strcmp(answer, output));
-    
-    if( strcmp(answer, output) == 0)
-    {
-        printf("You win!\n");
-        //win++;
-        (*win)++;           
-    }
-    
-    return 0;
-}
+    //struct stat *temp = malloc(sizeof(struct stat));
+    FILE *fp = fopen("hangman", "wb");
 
-int getGuess(char *guess)
-{
-    fgets(guess, MAX, stdin);
-    guess[strlen(guess) - 1] = '\0'; //Take guess to allow user to quit.
-    
-    if (strcmp(guess, "quit") == 0)
+    if ( fp == NULL )
     {
-        printf("Quitting");
-        return 1;
+        printf("Couldn't open .hangman file");
+        exit(1);
     }
     
-    guess[1] = '\0';   //Take only the first character of the guess
+    if(fread(&temp, sizeof(struct stat), 1, fp) > 0)
+    {
+        printf("%d \n", user->wins);
+        user = temp;
+        return;
+    }
+    else
+    {
+        strcpy(user->name, getenv("USER"));
+        user->wins = 0;
+        user->loss = 0;
+        user->guess = 0;
+    }
     
-    return 0;        
+    fclose(fp);
+        
 }
-int updateOutput(char *guess, char *answer, char *output)
+void updateStats(struct stat *user)
 {
-    int x, correct = 1;
-    for (x = 0; x < strlen(answer); x++)
+    FILE *fp = fopen("hangman", "wb+");
+    
+    if ( fp == NULL )
     {
-        if (answer[x] == tolower(*guess))
-            {
-                output[x] = tolower(*guess);
-                correct = 0;
-            }
+        printf("Couldn't open .hangman file");
+        exit(1);
     }
-    //printf("x: [%d] \n", correct);
-    return correct;
+    
+    
+    fseek(fp, 0, 0);
+    fwrite(user, sizeof(struct stat), 1, fp);
+    fclose(fp);
+    return;
+    
 }

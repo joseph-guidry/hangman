@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-void printStage(int wrong, char *used)
+void printStage(int wrong)
 {
     char uBody[3] = " ";
     char lBody[3] = " ";

@@ -24,16 +24,18 @@ void getAnswer(char *filename, char *answer)
     }
     
     srand(time(NULL));
-    wordNum = rand() % (lc - 1);  
+    wordNum = rand() % (lc + 1);  
     //Generate rand num for line to select. between 0 and last line.
-    
+    printf("line number: [%d] wordNum: [%d]\n", lc, wordNum);
     lc = 0;
+
     fseek(fp, 0, 0);
     while( fgets(temp, MAX, fp))
     {
         lc++;
         if ((lc == wordNum)  && (sscanf(temp,"%s", answer)))
         {
+            printf("[%s]: answer\n", answer);
             for( ; *answer; answer++)
             {
                 *answer = tolower(*answer);
@@ -41,7 +43,6 @@ void getAnswer(char *filename, char *answer)
             fclose(fp);
             return;
         }
-        //if (lc > 
     }
     
     fclose(fp);

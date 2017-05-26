@@ -11,24 +11,23 @@ struct stat {
     int loss;
     int guess;
 };
+
 //
 //  PROTOTYPES
 //
-void printStage(int s, char *used);
-
-void printBanner(void);
+void printStage(int s);
 
 void getAnswer(char *filename, char *answer);
 
+void printBanner(void);
+
 void printAnswer(char *answer, char *output);
 
-int evaluateGuess(char *answer, char *guess, char *output, char *used, int *wrong, int *win);
+int evaluateGuess(char *answer, char *guess, char *output, int *wrong, int *win);
 
 int getGuess(char *guess);
 
 int updateOutput(char *guess, char *answer, char *output);
-
-int checkUsed(char *guesschar, char *usedChars);
 
 void getStats(struct stat *user);
 
@@ -52,37 +51,59 @@ void printBanner(void)
     printf("%31s", "Welcome to Hangman\n");
     printf("%50s", "Guess a letter before time runs out!\n\n");
 }
-
-void getStats(struct stat *user)
+int evaluateGuess(char *answer, char *guess, char *output, int *wrong, int *win)
 {
-    struct stat *temp = malloc(sizeof(struct stat));
-    FILE *fp;
-
-    if ( (fp = fopen("hangman", "wb")) == NULL )
+    if (getGuess(guess))    //Get character for guess
     {
-        printf("Couldn't open .hangman file");
-        exit(1);
+        return 1;           // Quitting
     }
     
-    fread(temp, sizeof(struct stat), 1, fp);
-        fclose(fp);
-        
-    user = temp;
-}
-void updateStats(struct stat *user)
-{
-    FILE *fp = fopen("hangman", "wb");
-    
-    if ( fp == NULL )
+    if (updateOutput(guess, answer, output))
     {
-        printf("Couldn't open .hangman file");
-        exit(1);
+        (*wrong)++;
+        return 0;
+    }
+  
+    printf("Answer: [%s] Output: [%s] Guess: [%s]\n", answer, output, guess);
+    printf("compare: %d \n", strcmp(answer, output));
+    
+    if( strcmp(answer, output) == 0)
+    {
+        printf("You win!\n");
+        //win++;
+        (*win)++;           
     }
     
-    
-    fseek(fp, 0, 0);
-    fwrite(user, sizeof(struct stat), 1, fp);
-    fclose(fp);
-    return;
-    
+    return 0;
 }
+
+int getGuess(char *guess)
+{
+    fgets(guess, MAX, stdin);
+    guess[strlen(guess) - 1] = '\0'; //Take guess to allow user to quit.
+    
+    if (strcmp(guess, "quit") == 0)
+    {
+        printf("Quitting");
+        return 1;
+    }
+    
+    guess[1] = '\0';   //Take only the first character of the guess
+    
+    return 0;        
+}
+int updateOutput(char *guess, char *answer, char *output)
+{
+    int x, correct = 1;
+    for (x = 0; x < strlen(answer); x++)
+    {
+        if (answer[x] == tolower(*guess))
+            {
+                output[x] = tolower(*guess);
+                correct = 0;
+            }
+    }
+    //printf("x: [%d] \n", correct);
+    return correct;
+}
+
