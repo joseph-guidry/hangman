@@ -63,19 +63,15 @@ void checkAnswer(char *filename, char *answer)
         }
         for (unsigned x = 0; answer[x] ; x++)
         {
-            //printf("[%c] \n", *answer);
             if( isdigit(answer[x]) )
             {
-                //printf("[%c] \n", answer[x]);
                 break;
             }
             
             if ( !(isalpha(answer[x])) )
             {
-                //printf("[%c] \n", answer[x]);
                 break;
             }
-            //printf(" [%s] x: %d len: %lu \n", answer, x, strlen(answer));
             if (x == strlen(answer) - 1 )
             {
                 return;

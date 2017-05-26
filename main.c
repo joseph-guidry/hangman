@@ -35,16 +35,12 @@ int main(int argc, char **argv)
         strcpy(wordfilename, argv[1]);
     }
    
-    printf("[%s] filename \n", wordfilename);
-   
     //Make .hangman file if it doesn't exist
     if( (game = fopen(".hangman", "r")) == NULL )
     {
-        printf("here if hangman does not exist\n");
         game = fopen(".hangman", "w");
         if (game == NULL)
         {
-            printf("here\n");
             exit(1);
         }
         struct stats user;
@@ -54,7 +50,6 @@ int main(int argc, char **argv)
         user.loss = 0;
         user.guess = 0;
         fwrite(&user, 1 , sizeof(struct stats), game);
-        printf("[%ld] position \n", ftell(game));
     }
     fclose(game);
     
@@ -82,21 +77,19 @@ int main(int argc, char **argv)
         
         while(1)
         {      
-            printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
+            //printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
             printAnswer(gameAnswer, outputAnswer);
             
             if (evaluateGuess(gameAnswer, guess, outputAnswer, &wrong, &match) == 1)
             {
-                printf("Update loss stats\n");
+                printf("\nUpdate loss stats\n");
                 currentuser.loss++;
                 
                 break;
             }
-            printf("win: [%d] \n", match);
-            
             if (match)
             {
-                printf("You win!");
+                printf("You win!\nThe answer was:  [%s]\n", gameAnswer);
                 currentuser.wins++;
                 printf("Total wins: %d\n", currentuser.wins);
 
@@ -114,8 +107,6 @@ int main(int argc, char **argv)
             if (wrong == 6)
             {
                 printf("You lost!\nThe answer was:  [%s]\n", gameAnswer);
-                
-                printf("Update loss stats: %d\n", currentuser.loss);
                 currentuser.loss++;
                 wrong = 0;
 
@@ -136,7 +127,9 @@ int main(int argc, char **argv)
         }
         break;
     }
-    printf("AFter game\nuser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
+    
+    //Print stats for current user.
+    printf("\nUser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
              currentuser.wins, currentuser.loss, 
              (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
              
@@ -144,6 +137,7 @@ int main(int argc, char **argv)
     updateStats(&currentuser);
     return 0; 
 }
+
 void getStats(struct stats *user)
 {
     FILE *fp;

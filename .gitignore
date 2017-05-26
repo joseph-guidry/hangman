@@ -1,4 +1,6 @@
 wordlist
+*backup*
+.hangman
 project.c
 *.o
 hangman
