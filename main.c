@@ -8,25 +8,57 @@
 
 int main(int argc, char **argv)
 {
-    int wrong = 0, match = 0; //win, loss;
-    struct stat currentuser;
+    FILE *game;
+    int x, wrong = 0, match = 0, num = 1; //win, loss;
+    struct stats currentuser;
     
     char again[MAX];
     char guess[MAX];
     char gameAnswer[MAX];
     char outputAnswer[MAX];
-    
-    if (argc != 2)
+    /*
+    if (argc == 1)
+    */
+    if (argc == 2)
     {
         printf("%s: invalid number of arguements\n", argv[0]);
         exit(1);
     }
-    //GET PREVIOUS GAME STATS from .hangout   fopen(.hangman, "w+")
+    /*
+    if (argc == 3)
+    {
+        //get the 
+    }
+    */
+    //Make .hangman file if it doesn't exist
+    if( (game = fopen("hangman", "r")) == NULL )
+    {
+        printf("here if hangman does not exist\n");
+        game = fopen("hangman", "w");
+        if (game == NULL)
+        {
+            exit(1);
+        }
+        struct stats user;
+        fwrite(&num, 1, sizeof(int), game);
+        strcpy(user.name, "NEWUSER");
+        user.wins = 0;
+        user.loss = 0;
+        user.guess = 0;
+        fwrite(&user, 1 , sizeof(struct stats), game);
+        printf("[%ld] position \n", ftell(game));
+    }
+    printf("skip making hangman\n");
+    fclose(game);
+    
     getStats(&currentuser);
-    
-    int x;
-    
-    printf("user: %s Wins: %d, Losses: %d \n", currentuser.name, currentuser.wins, currentuser.loss);
+
+    printf("[%s] \n", getenv("SHELL"));
+    printf("Begining of game\nuser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
+             currentuser.wins, currentuser.loss, 
+             (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
+             
+    strcpy(currentuser.name, getenv("USER"));
     
     while(1)
         {
@@ -38,9 +70,13 @@ int main(int argc, char **argv)
         }
         outputAnswer[x] = '\0';
         
-        while(0)
+        while(1)
         {      
-            system("clear");//&& system("cls");
+            if (strstr(getenv("SHELL"), "bin/bash") ) //If running in BASH shell environment
+            {
+                system("clear");
+            }
+            
             printBanner();
             printStage(wrong);
             
@@ -59,6 +95,8 @@ int main(int argc, char **argv)
             {
                 printf("You win!");
                 currentuser.wins++;
+                printf("Current wins: %d", currentuser.wins);
+
                 currentuser.guess += wrong;
                 wrong = 0;
                 
@@ -68,7 +106,7 @@ int main(int argc, char **argv)
             {
                 printf("You lost!\nThe answer was:  [%s]\n", gameAnswer);
                 
-                //printf("Update loss stats\n");
+                printf("Update loss stats: %d\n", currentuser.loss);
                 currentuser.loss++;
                 wrong = 0;
                 break;
@@ -89,54 +127,54 @@ int main(int argc, char **argv)
         }
         break;
     }
-    printf("user: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name, currentuser.wins, 
-           currentuser.loss, (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
-    //updateStats();
-    
+    printf("AFter game\nuser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
+             currentuser.wins, currentuser.loss, 
+             (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
+             
+             
+    updateStats(&currentuser);
     return 0; 
 }
-void getStats(struct stat *user)
+void getStats(struct stats *user)
 {
-    //struct stat *temp = malloc(sizeof(struct stat));
-    FILE *fp = fopen("hangman", "wb");
+    FILE *fp;
+    fp = fopen("hangman", "rb+");
+    unsigned int num;
 
     if ( fp == NULL )
     {
         printf("Couldn't open .hangman file");
         exit(1);
     }
+    fseek(fp, 0, 0);
+    printf("Open hangman at: %ld \n", ftell(fp));
+   
+    printf("[%ld] position \n", ftell(fp));
+    fread(&num, 1, sizeof(int), fp);
+    printf("[%d]\n", num);
+    printf("[%ld] position \n", ftell(fp));
+    fread(user, sizeof(struct stats), 1, fp);
+    printf("[%ld] position \n", ftell(fp));
     
-    if(fread(&temp, sizeof(struct stat), 1, fp) > 0)
-    {
-        printf("%d \n", user->wins);
-        user = temp;
-        return;
-    }
-    else
-    {
-        strcpy(user->name, getenv("USER"));
-        user->wins = 0;
-        user->loss = 0;
-        user->guess = 0;
-    }
     
     fclose(fp);
-        
+    
 }
-void updateStats(struct stat *user)
-{
-    FILE *fp = fopen("hangman", "wb+");
-    
-    if ( fp == NULL )
-    {
-        printf("Couldn't open .hangman file");
-        exit(1);
-    }
-    
+void updateStats(struct stats *user)
+{   
+
+    FILE *fp;
+    fp = fopen("hangman", "r+");
     
     fseek(fp, 0, 0);
-    fwrite(user, sizeof(struct stat), 1, fp);
+    printf("[%ld] position \n", ftell(fp));
+    int num = 1;
+    fwrite(&num, 1, sizeof(int), fp);
+    printf("[%ld] position \n", ftell(fp));
+    
+    fwrite(user, 1 , sizeof(struct stats), fp);
+    printf("[%ld] position \n", ftell(fp));
     fclose(fp);
-    return;
+    
     
 }

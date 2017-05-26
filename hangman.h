@@ -5,11 +5,11 @@
 
 #define MAX 50
 
-struct stat {
-    char name[MAX];
+struct stats {
     int wins;
     int loss;
     int guess;
+    char name[10];
 };
 
 //
@@ -29,9 +29,9 @@ int getGuess(char *guess);
 
 int updateOutput(char *guess, char *answer, char *output);
 
-void getStats(struct stat *user);
+void getStats(struct stats *user);
 
-void updateStats(struct stat *user);
+void updateStats(struct stats *user);
 //
 //  FUNCTIONS
 //
