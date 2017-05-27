@@ -20,6 +20,7 @@ int main(int argc, char **argv)
     char outputAnswer[MAX];
     char wordfilename[MAX];
     
+    //Handle options for word lists from default or commandline
     if (argc == 1)
     {
         strcpy(wordfilename, getenv("HOME"));
@@ -54,11 +55,11 @@ int main(int argc, char **argv)
     fclose(game);
     
     getStats(&currentuser);
-
-    strcpy(currentuser.name, getenv("USER"));
+    strcpy(currentuser.name, getenv("USER"));   //Get Current User profile name.
     
     while(1)
         {
+        //Ensure word selected is all alpha characters
         checkAnswer(wordfilename, gameAnswer);
         
         //Reset the output answer to all '_' characters
@@ -77,14 +78,12 @@ int main(int argc, char **argv)
         
         while(1)
         {      
-            //printf("Answer: %s\nLength: %lu\n", gameAnswer, strlen(gameAnswer));
+            //Begin Getting guesses for playing the hangman game.
             printAnswer(gameAnswer, outputAnswer);
-            
             if (evaluateGuess(gameAnswer, guess, outputAnswer, &wrong, &match) == 1)
             {
                 printf("\nUpdate loss stats\n");
                 currentuser.loss++;
-                
                 break;
             }
             if (match)
@@ -97,8 +96,8 @@ int main(int argc, char **argv)
                 wrong = 0;
                 break;
             }
-            
-            if (strstr(getenv("SHELL"), "bin/bash") ) //If running in BASH shell environment
+            //If running in BASH shell environment
+            if (strstr(getenv("SHELL"), "bin/bash") ) 
             {
                 system("clear");
             }
@@ -109,13 +108,9 @@ int main(int argc, char **argv)
                 printf("You lost!\nThe answer was:  [%s]\n", gameAnswer);
                 currentuser.loss++;
                 wrong = 0;
-
                 break;
-                
             }
-            
         }
-        
         //If user wins OR loses ask to play again.
         printf("Play again? Type 'yes' >  ");
         fgets(again, MAX, stdin);
@@ -127,12 +122,10 @@ int main(int argc, char **argv)
         }
         break;
     }
-    
     //Print stats for current user.
     printf("\nUser: %s \nW: %d, L: %d \nGuess Average: %.2f\n", currentuser.name,
              currentuser.wins, currentuser.loss, 
              (currentuser.wins < 1) ? 0 : (float) currentuser.guess / currentuser.wins);
-             
              
     updateStats(&currentuser);
     return 0; 
@@ -150,10 +143,8 @@ void getStats(struct stats *user)
         exit(1);
     }
     fseek(fp, 0, 0);
-   
     fread(&num, 1, sizeof(int), fp);
     fread(user, sizeof(struct stats), 1, fp);
-    
     
     fclose(fp);
     

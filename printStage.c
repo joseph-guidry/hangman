@@ -49,6 +49,4 @@ void printStage(int wrong)
     {
         printf("_");
     }
-
-    putchar('\n');
 }
