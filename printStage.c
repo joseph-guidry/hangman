@@ -49,4 +49,6 @@ void printStage(int wrong)
     {
         printf("_");
     }
+    
+    printf("\n\n");
 }
